@@ -1,53 +1,4 @@
-clear; clc;
 tic;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                           PARAMETROS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-freq = 15e9;                      % 15 GHz
-lambda = (3 * 10^8) / freq;       % comprimento de onda
-L = 100;                        % numero de amostras temporais
-power = 0.1;                      % potencia transmitida (W)
-alpha = 2;                        % expoente path loss
-P_tx = 0.1;                       % transmission power (w)
-%N_dBm = -90;                     % noise power in dBm
-SNR_dB = 19;                       % relacao sinal ruido
-% ARQUITETURA URA
-Mx = 8;                           % n antenas na horizontal
-Mz = 8;                           % n  de antenas na vertical
-M = Mx * Mz;                      % n  total de antenas
-d_x = lambda / 2;                 % espacamento antenas eixo x
-d_z = lambda / 2;                 % espacamento antenas eixo z
-elev = 20;                        % altura do array
-% Geracao da grade de busca
-x_grid = -50:1:50;                % grade de busca em x
-y_grid = 10:1:50;                 % grade de busca em y
-% MUSIC
-max_iter = 10;                    % max interacao do Nelder-Mead
-tol = 1e-5;                       % tolerancia de erro
-% PEACH
-x = [min(x_grid), max(x_grid)];   % limites de busca em x
-y = [min(y_grid), max(y_grid)];   % limites de busca em y
-% Posicao da fonte (usuario)
-x_rand = rand_u(x);               % gerar pos. pseudoaleatoria
-y_rand = rand_u(y);               % gerar pos. pseudoaleatoria
-%pos = [rand_u(x) rand_u(y) 0];   % posicao 3D user pseudoaleatoria
-pos = [30 30 0];                  % posicao determinisca
-UEs = pos;                        % mesma ref passada ao sinal
-n_hiper = 816;                     % numero de candidatos
-n_circ  = 408;                     % numero de candidatos
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Controlar plots logica bool(true=1, false=0)
-
-plt_array      = 0; % architecture
-plt_hiper      = 0; % PEACH
-plt_circle     = 0; % PEACH
-plt_itersec    = 0; % PEACH
-plt_peach      = 0; % PEACH
-plt_neldermead = 0; % Nelder-Mead
-plt_spectrum   = 1; % pseudospectrum  
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Geracao da geometria da URA
 [URA, URA_x, URA_z, x_h, x_v, z_h, z_v] = subarrays(Mx, Mz, d_x, d_z, elev, lambda, plt_array);
@@ -61,7 +12,6 @@ URA_y = zeros(size(URA_x));  % plano XZ ? y fixo = 0 para todas as antenas
 [Yh, Yv, Y] = signals(UEs, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
 %%%%%%%%%%%%%%%%%%%%%%%%% PEAK FINDER %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 % Elemento de referência
 ref = URA(1,:);
 
@@ -70,7 +20,7 @@ responsearray = @(x, y, z) steering_vector(Mx, Mz, elev, d_x, d_z, lambda, x, y,
 [Pmusic] = pseudospectrum(responsearray, Y, L);
 
 % Estimativa PEACH com subarranjos
-[Un_h, Un_v, pos_est] = peach_music_analitico(Yh, Yv, L, x, n_hiper, ...
+[Un_h, Un_v, pos_est] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
     x_h, z_h, x_v, z_v, ref, ...
     lambda, y, n_circ, pos);
 
@@ -96,7 +46,7 @@ numIterNM = 100;
 % [nm_est, simplex_history] = nelder_mead(URA, pos_est, Un, lambda, ref, ...
 %     deltaArea, numIterNM, x, y);
 
-[nm_est, simplex_history] = nelder_mead_limited(URA, pos_est, Un, lambda, ref, ...
+[nm_est, simplex_history] = nelder_mead(URA, pos_est, Un, lambda, ref, ...
     deltaArea, numIterNM, 1e-6, true, x, y);
 
 
@@ -368,64 +318,7 @@ function a = steering_vector(Mx, Mz, elev, d_x, d_z, lambda, x, y, z)
     end
 end
 
-function pseudo_random = rand_u(grid_vector)
-    if min(grid_vector) == 0
-        % Geracao simetrica ao redor de zero
-        pseudo_random = (2 * max(grid_vector)) * rand - max(grid_vector);
-    else
-        % Geracao dentro do intervalo real
-        pseudo_random = min(grid_vector) + (max(grid_vector) - min(grid_vector)) * rand;
-    end
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [Jxx, Jyy, Jxy] = precomputeCRBterms(URA, user_xyz, lambda)
-% Calcula os termos não escalados da matriz de informação de Fisher (FIM)
-% URA: matriz M×3 com coordenadas [x, y, z]
-% user_xyz: vetor [x_u, y_u, z_u]
-
-    user_x = user_xyz(1);
-    user_y = user_xyz(2);
-    user_z = user_xyz(3);
-
-    x_ref = URA(1,1);
-    y_ref = URA(1,2);
-    z_ref = URA(1,3);
-
-    d_ref = sqrt((x_ref - user_x)^2 + (y_ref - user_y)^2 + (z_ref - user_z)^2);
-
-    Jxx = 0; Jyy = 0; Jxy = 0;
-
-    for i = 1:size(URA,1)
-        x_i = URA(i,1);
-        y_i = URA(i,2);
-        z_i = URA(i,3);
-
-        d_i = sqrt((x_i - user_x)^2 + (y_i - user_y)^2 + (z_i - user_z)^2);
-
-        delta_i   = user_x - x_i;
-        delta_ref = user_x - x_ref;
-
-        % Derivadas em x
-        partial_x_1 = delta_i / d_i^3;
-        partial_x_2 = (2*pi / lambda)^2 * ((delta_i/d_i^2) - (delta_ref/(d_ref*d_i)))^2;
-        px = partial_x_1^2 + partial_x_2;
-        Jxx = Jxx + px;
-
-        % Derivadas em y
-        partial_y_1 = user_y / d_i^3;
-        partial_y_2 = (2*pi / lambda)^2 * ((user_y/d_i^2) - (user_y/(d_ref*d_i)))^2;
-        py = partial_y_1^2 + partial_y_2;
-        Jyy = Jyy + py;
-
-        % Termo cruzado x-y
-        cross_part_1 = (delta_i / d_i^3) * (user_y / d_i^3);
-        cross_part_2 = (2*pi / lambda)^2 * ...
-            ((delta_i/d_i^2) - (delta_ref/(d_ref*d_i))) * ...
-            ((user_y/d_i^2) - (user_y/(d_ref*d_i)));
-        Jxy = Jxy + (cross_part_1 + cross_part_2);
-    end
-end
 
 function [Pmusic, Un] = pseudospectrum(responsearray, Y, snapshots)
     %-----------------------------------------------
