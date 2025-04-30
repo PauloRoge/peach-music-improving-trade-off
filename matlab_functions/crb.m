@@ -1,3 +1,27 @@
+function cramer_rao_bound = crb(L, URA, UEs, lambda, noise_power)
+    % Fator de normalizacao da FIM (conforme CRB derivado)
+    P_norm = L * (lambda / (sqrt(2)*pi*sqrt(noise_power)))^2;
+    
+    % Calculo dos termos da FIM nao escalados 
+    [Jxx_c, Jyy_c, Jxy_c] = precomputeCRBterms(URA, UEs, lambda);
+    
+    % Termos escalados
+    Jxx_s = P_norm * Jxx_c;
+    Jyy_s = P_norm * Jyy_c;
+    Jxy_s = P_norm * Jxy_c;
+    
+    % Denominadores do CRB
+    den_x = Jxx_s - (Jxy_s^2 / Jyy_s);
+    den_y = Jyy_s - (Jxy_s^2 / Jxx_s);
+    
+    % CRB individuais
+    crb_x = 1 / den_x;
+    crb_y = 1 / den_y;
+    
+    % CRB combinado euclidiano
+    cramer_rao_bound = sqrt(crb_x + crb_y);
+end
+
 function [Jxx, Jyy, Jxy] = precomputeCRBterms(URA, user_xyz, lambda)
 % Calcula os termos não escalados da matriz de informação de Fisher (FIM)
 % URA: matriz M×3 com coordenadas [x, y, z]

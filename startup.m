@@ -1,26 +1,26 @@
 % startup.m – Executado automaticamente ao abrir o projeto
 clear, close all; clc;
 
+% ---------------- Parâmetros Gerais ----------------
+freq = 15e9;
+lambda = (3e8) / freq;
+L = 10;
+power = 0.1;
+alpha = 2;
+P_tx = 0.1;
+SNR_dB = 0;
+
 % --------------- Flags de Plots ---------------------
 plt_array = 0;
 plt_hiper = 0;
 plt_circle = 0;
 plt_itersec = 0;
+plt_neldermead = 0;
 plt_peach = 0;
-plt_neldermead = 1;
 plt_spectrum = 1;
 
-% ---------------- Parâmetros Gerais ----------------
-freq = 15e9;
-lambda = (3e8) / freq;
-L = 100;
-power = 0.1;
-alpha = 2;
-P_tx = 0.1;
-SNR_dB = 19;
-
 % --------------- Antenas URA -----------------------
-Mx = 16; Mz = 16;
+Mx = 8; Mz = 8;
 M = Mx * Mz;
 d_x = lambda/2;
 d_z = lambda/2;
@@ -39,8 +39,8 @@ pos = [30 30 0];
 UEs = pos;
 
 % --------------- Parâmetros PEACH -------------------
-n_hiper = 8160;
-n_circ = 4080;
+n_hiper = 816;
+n_circ = 408;
 
 % --------------- Parâmetros NM ----------------------
 max_iter = 10;

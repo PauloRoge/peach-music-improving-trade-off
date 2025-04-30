@@ -1,12 +1,8 @@
+startup;
 tic;
-
 % Geracao da geometria da URA
 [URA, URA_x, URA_z, x_h, x_v, z_h, z_v] = subarrays(Mx, Mz, d_x, d_z, elev, lambda, plt_array);
 URA_y = zeros(size(URA_x));  % plano XZ ? y fixo = 0 para todas as antenas
-
-% % SINAL RECEBIDO (modelo fisico fiel) baseado na pot.tx e no ruído direto 
-%  [Yh, Yv, Y] = signals(UEs, URA_x, URA_y, URA_z, lambda, L, alpha, ...
-%      P_tx, N_dBm);
 
 % % SINAL RECEBIDO (modelo fisico fiel) baseado na SNR
 [Yh, Yv, Y] = signals(UEs, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
@@ -29,26 +25,18 @@ fprintf('\nPosicao PEACH-MUSIC: (%.2f, %.2f)', pos_est(1), pos_est(2));
  
 % MUSIC (completo)
  %-----------------------------------------------
-    % DIVISÃO DO SUBESPAÇO (Vn)
-    %-----------------------------------------------
-    Cov = (Y * Y') / L;
-    [eigenvectors, eigenvalues] = eig(Cov); 
-    estimated_sources = 1;
-    [~, i] = sort(diag(eigenvalues), 'descend'); 
-    eigenvectors = eigenvectors(:, i);
-    Un = eigenvectors(:, estimated_sources+1:end);
-    %-----------------------------------------------
-
-% Parâmetros para refinamento Nelder-Mead
-deltaArea = 5;
-numIterNM = 100;
-
-% [nm_est, simplex_history] = nelder_mead(URA, pos_est, Un, lambda, ref, ...
-%     deltaArea, numIterNM, x, y);
+% DIVISÃO DO SUBESPAÇO (Vn)
+%-----------------------------------------------
+Cov = (Y * Y') / L;
+[eigenvectors, eigenvalues] = eig(Cov); 
+estimated_sources = 1;
+[~, i] = sort(diag(eigenvalues), 'descend'); 
+eigenvectors = eigenvectors(:, i);
+Un = eigenvectors(:, estimated_sources+1:end);
+%-----------------------------------------------
 
 [nm_est, simplex_history] = nelder_mead(URA, pos_est, Un, lambda, ref, ...
     deltaArea, numIterNM, 1e-6, true, x, y);
-
 
 % Calculo dos erros euclidianos entre estimativa e posicao real
 erro_peach  = norm(pos_est - pos(1:2));
@@ -250,10 +238,6 @@ if(plt_itersec)
     hold off;
 end
 
-% Calculo do CRB teorico (normalizado) com URA direto
-% Calculo dos termos da FIM nao escalados 
-[Jxx_c, Jyy_c, Jxy_c] = precomputeCRBterms(URA, UEs, lambda);
-
 % Calculo da potencia recebida total (usado para noise power)
 total_rx_power = 0;
 for i = 1:size(URA, 1)
@@ -266,24 +250,7 @@ end
 SNR_lin = 10^(SNR_dB/10);
 noise_power = total_rx_power / SNR_lin;
 
-% Fator de normalizacao da FIM (conforme CRB derivado)
-P_norm = L * (lambda / (sqrt(2)*pi*sqrt(noise_power)))^2;
-
-% Termos escalados
-Jxx_s = P_norm * Jxx_c;
-Jyy_s = P_norm * Jyy_c;
-Jxy_s = P_norm * Jxy_c;
-
-% Denominadores do CRB
-den_x = Jxx_s - (Jxy_s^2 / Jyy_s);
-den_y = Jyy_s - (Jxy_s^2 / Jxx_s);
-
-% CRB individuais
-crb_x = 1 / den_x;
-crb_y = 1 / den_y;
-
-% CRB combinado euclidiano
-crb_eucl = sqrt(crb_x + crb_y);
+crb_eucl = crb(L, URA, UEs, lambda, noise_power);
 
 fprintf('\nCRB (Euclidiano) = %.4f m\n', crb_eucl);
 
