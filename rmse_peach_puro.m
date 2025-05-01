@@ -1,7 +1,7 @@
 % ==============================================================
 %  -– compara PEACH-MUSIC com o CRB teórico corretamente
 % ==============================================================
-clc;
+clear;  clc;
 startup;
 
 % -------------- 2. PREPARA ARRAY (como seu subarrays.m) --------
@@ -10,8 +10,8 @@ startup;
 ref = URA(1,:);   % referência = primeiro elemento
 
 % -------------- 3. LAÇO DE SNRs --------------------------------
-SNR_dB_vec = 0:5:30;            % valores de SNR a testar
-Nreal      = 200;                 % Monte-Carlo
+SNR_dB_vec = 0:2:20;            % valores de SNR a testar
+Nreal      = 10000;                 % Monte-Carlo
 
 RMSE  = zeros(size(SNR_dB_vec));
 CRBth = zeros(size(SNR_dB_vec));
@@ -45,25 +45,25 @@ for k = 1:numel(SNR_dB_vec)
             x_h, z_h, x_v, z_v, ref, ...
             lambda, y, n_circ, pos);
 
-        %-----------------------------------------------
-        % DIVISÃO DO SUBESPAÇO (Vn)
-        %-----------------------------------------------
-        Cov = (Y * Y') / L;
-        [eigenvectors, eigenvalues] = eig(Cov); 
-        estimated_sources = 1;
-        [~, i] = sort(diag(eigenvalues), 'descend'); 
-        eigenvectors = eigenvectors(:, i);
-        Un = eigenvectors(:, estimated_sources+1:end);
-        %-----------------------------------------------
+        % %-----------------------------------------------
+        % % DIVISÃO DO SUBESPAÇO (Vn)
+        % %-----------------------------------------------
+        % Cov = (Y * Y') / L;
+        % [eigenvectors, eigenvalues] = eig(Cov); 
+        % estimated_sources = 1;
+        % [~, i] = sort(diag(eigenvalues), 'descend'); 
+        % eigenvectors = eigenvectors(:, i);
+        % Un = eigenvectors(:, estimated_sources+1:end);
+        % %-----------------------------------------------
+        % 
+        % [nm_est, simplex_history] = nelder_mead(URA, estPos, Un, lambda, ref, ...
+        % deltaArea, numIterNM, 1e-6, true, x, y);
 
-        [nm_est, simplex_history] = nelder_mead(URA, estPos, Un, lambda, ref, ...
-        deltaArea, numIterNM, 1e-6, true, x, y);
-
-        err2 = err2 + norm(nm_est - pos(1:2))^2;
+        err2 = err2 + norm(estPos - pos(1:2))^2;
     end
 
     RMSE(k) = sqrt(err2/Nreal);
-    fprintf('SNR = %+3d dB | RMSE = %.3f m | √CRB = %.3f m\n',...
+    fprintf('SNR = %+3d dB | RMSE = %.3f m | CRB = %.3f m\n',...
              SNRdB, RMSE(k), CRBth(k));
 end
 
@@ -71,6 +71,6 @@ end
 figure;  semilogy(SNR_dB_vec,RMSE,'o-','LineWidth',1.5); hold on;
 semilogy(SNR_dB_vec,CRBth,'s--','LineWidth',1.5);
 grid on; xlabel('SNR (dB)'); ylabel('Erro (m)');
-legend('RMSE Monte-Carlo','\sqrt{CRB} teórico','Location','southwest');
+legend('RMSE Monte-Carlo','CRB teórico','Location','southwest');
 title(sprintf('PEACH-MUSIC  |  %d×%d URA,  L = %d,  N_{real} = %d',...
                Mx,Mz,L,Nreal));

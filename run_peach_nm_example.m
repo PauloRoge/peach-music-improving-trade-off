@@ -78,16 +78,16 @@ if (plt_spectrum == 1)
     title(sprintf('Pseudoespectro MUSIC (SNR = %d dB), %d×%d URA', SNR_dB, Mx, Mz));
     colorbar;
 
-    % [X, Y] = meshgrid(x_grid, y_grid);
-    % figure;
-    % surf(X, Y, 10*log10(Pmusic_fixo'));
-    % xlabel('x (m)');
-    % ylabel('y (m)');
-    % zlabel('Pseudoespectro (dB)');
-    % title('Pseudoespectro MUSIC');
-    % shading interp;
-    % colorbar;
-    % view(45, 45); % Ângulo de visão
+    [X, Y] = meshgrid(x_grid, y_grid);
+    figure;
+    surf(X, Y, 10*log10(Pmusic_fixo'));
+    xlabel('x (m)');
+    ylabel('y (m)');
+    zlabel('Pseudoespectro (dB)');
+    title('Pseudoespectro MUSIC');
+    shading interp;
+    colorbar;
+    view(45, 45); % Ângulo de visão
 
 
     if(plt_neldermead == 1)

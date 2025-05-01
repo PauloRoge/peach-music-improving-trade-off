@@ -1,14 +1,14 @@
 % startup.m – Executado automaticamente ao abrir o projeto
-clear, close all; clc;
+clc;
 
 % ---------------- Parâmetros Gerais ----------------
 freq = 15e9;
 lambda = (3e8) / freq;
-L = 10;
+L = 100;
 power = 0.1;
 alpha = 2;
 P_tx = 0.1;
-SNR_dB = 0;
+SNR_dB = 30;
 
 % --------------- Flags de Plots ---------------------
 plt_array = 0;
@@ -35,16 +35,19 @@ y = [min(y_grid), max(y_grid)];
 % --------------- Posição do Usuário -----------------
 %pos = u_rand(x_grid,y_grid);
 
-pos = [30 30 0];
+pos = [30/sqrt(2) 30/sqrt(2) 0];
 UEs = pos;
 
 % --------------- Parâmetros PEACH -------------------
-n_hiper = 816;
-n_circ = 408;
+n_hiper = 96;
+n_circ = 48;
 
 % --------------- Parâmetros NM ----------------------
 max_iter = 10;
 tol = 1e-5;
+deltaArea = 5;
+numIterNM = 100;
+
 % 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %                           PARAMETROS
