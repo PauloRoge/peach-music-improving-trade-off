@@ -3,22 +3,32 @@ function [Un_h, Un_v, pos_est] = peach_analitico(Xh, Xv, L, x, n_hiper, ...
     lambda, y, n_circ, pos)
 
     %-----------------------------------------------
-    % SUBESPACOS
+    % SUBESPACOS COM DIAGONAL LOADING
     %-----------------------------------------------
-    Cov_h = (Xh * Xh') / L;
+    Cov_h = (Xh * Xh') / L;                    % covariância estimada
     Cov_v = (Xv * Xv') / L;
-
-    [Uh, ~, ~] = svd(Cov_h);
+    
+    % escolhe ε como uma fração (e.g. 10^{-3}) da potência média
+    M_h = size(Cov_h,1);
+    M_v = size(Cov_v,1);
+    eps_h = 1e-3 * trace(Cov_h) / M_h;
+    eps_v = 1e-3 * trace(Cov_v) / M_v;
+    
+    Cov_h = Cov_h + eps_h * eye(M_h);          % aplicação do diagonal loading
+    Cov_v = Cov_v + eps_v * eye(M_v);
+    
+    [Uh, ~, ~] = svd(Cov_h);                    % SVD regularizada
     [Uv, ~, ~] = svd(Cov_v);
     
     Un_h = Uh(:, 2:end);
     Un_v = Uv(:, 2:end);
 
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Subarranjo horizontal => HIPERBOLE
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     response_h = @(x_cand) responsearray(x_cand, 0, x_h, z_h, ref, lambda);
-    x_candidates = linspace(-max(x), max(x), n_hiper);
+    x_candidates = linspace(min(x), max(x), n_hiper);
     [~, x_peak] = music(x_candidates, Un_h, response_h);
 
     F1x = x_h(1);  F1z = z_h(1);
@@ -32,7 +42,8 @@ function [Un_h, Un_v, pos_est] = peach_analitico(Xh, Xv, L, x, n_hiper, ...
     % Subarranjo vertical => CIRCULO
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     response_v = @(y_cand) responsearray(0, y_cand, x_v, z_v, ref, lambda);
-    y_candidates = linspace(0, max(y), n_circ);
+    y_candidates = linspace(min(y), max(y), n_circ); %evitar a reactive-distance
+    % y_candidates = linspace(0, max(y), n_circ);
     [~, y_peak] = music(y_candidates, Un_v, response_v);
     R_est = y_peak;
 
@@ -94,18 +105,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function a = responsearray(x_cand, y_cand, URA_x, URA_z, ref, lambda)
-    M = numel(URA_x);
-    a = zeros(M,1);
+    % distância referência–usuário
+    d_ref = sqrt((ref(1) - x_cand).^2 + y_cand.^2 + ref(3).^2);
 
-    d_ref = sqrt((ref(1) - x_cand)^2 + y_cand^2 + ref(3)^2);
-    for m = 1:M
-        x_k = URA_x(m);
-        z_k = URA_z(m);
-        d_k = sqrt((x_k - x_cand)^2 + y_cand^2 + z_k^2);
-        phase = -(2*pi/lambda)*(d_ref - d_k);
-        a(m) = exp(1j * phase);
-    end
+    % distâncias de todos os elementos de uma só vez
+    d_k   = sqrt((URA_x - x_cand).^2 + y_cand.^2 + URA_z.^2);
+
+    % fase vetorizada
+    phase = -(2*pi/lambda) * (d_ref - d_k);
+
+    % steering vector
+    a     = exp(1j * phase);
 end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FUNCAO LOCAL - MUSIC CANDIDATES

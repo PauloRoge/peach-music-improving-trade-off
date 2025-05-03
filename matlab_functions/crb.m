@@ -1,9 +1,25 @@
-function cramer_rao_bound = crb(L, URA, UEs, lambda, noise_power)
+function cramer_rao_bound = crb(L, URA, pos, lambda, P_tx, SNR_dB)
+    
+    SNR_lin = 10^(SNR_dB/10);
+
+    % potência total recebida
+    total_rx_power = 0;
+
+    for m = 1:size(URA,1)
+        d_m = norm(URA(m,:) - pos);
+        beta = (lambda / (4*pi*d_m))^2;
+        total_rx_power = total_rx_power + P_tx * beta;
+    end
+
+    noise_power = total_rx_power / SNR_lin;
     % Fator de normalizacao da FIM (conforme CRB derivado)
-    P_norm = L * (lambda / (sqrt(2)*pi*sqrt(noise_power)))^2;
+    % P_norm = L * (lambda / (sqrt(2)*pi*sqrt(noise_power)))^2;
+
+    s_amp  = sqrt(P_tx);                 % |s|
+    P_norm = L * ( (s_amp * lambda) / (sqrt(2) * pi * sqrt(noise_power)) )^2;
     
     % Calculo dos termos da FIM nao escalados 
-    [Jxx_c, Jyy_c, Jxy_c] = precomputeCRBterms(URA, UEs, lambda);
+    [Jxx_c, Jyy_c, Jxy_c] = precomputeCRBterms(URA, pos, lambda);
     
     % Termos escalados
     Jxx_s = P_norm * Jxx_c;
@@ -11,12 +27,10 @@ function cramer_rao_bound = crb(L, URA, UEs, lambda, noise_power)
     Jxy_s = P_norm * Jxy_c;
     
     % Denominadores do CRB
-    den_x = Jxx_s - (Jxy_s^2 / Jyy_s);
-    den_y = Jyy_s - (Jxy_s^2 / Jxx_s);
-    
-    % CRB individuais
-    crb_x = 1 / den_x;
-    crb_y = 1 / den_y;
+    det_FIM = Jxx_s*Jyy_s - Jxy_s^2;
+    crb_x = Jyy_s / det_FIM;
+    crb_y = Jxx_s / det_FIM;
+
     
     % CRB combinado euclidiano
     cramer_rao_bound = sqrt(crb_x + crb_y);

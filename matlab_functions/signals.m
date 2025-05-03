@@ -1,21 +1,16 @@
+
 % essa function utiliza o mesmo metodo para calcular a snr do script do
 % Bruno + a correção da antena referencia.
 function [Yh, Yv, Y] = signals(UEs, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, My)
 
     M = size(URA, 1);
-    assert(M == Mx*My,'Mx/My incompatíveis com o vetor URA');
-    
     user_pos = UEs(1,:);                         
     SNR_linear = 10^(SNR_dB / 10);
 
     % --- Canal vetorizado (H) ---
-    d_km  = sqrt(sum((URA - user_pos).^2, 2));
-    d_k1 = d_km(1);
-    %d_k1  = norm(URA(1,:) - user_pos); 
-
-    % --- Pathloss
-    beta = (lambda / (4*pi))^2 ./ (d_km.^alpha);  % onde alpha ≥ 2
-    
+    d_km  = sqrt(sum((URA - user_pos).^2, 2));    
+    d_k1  = norm(URA(1,:) - user_pos);            
+    beta  = (lambda^alpha) ./ ((4*pi*d_km).^alpha);
     phase = -(2*pi/lambda) * (d_k1 - d_km);
     H     = sqrt(beta) .* exp(1j * phase);       
 

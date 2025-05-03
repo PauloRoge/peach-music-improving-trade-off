@@ -15,16 +15,20 @@ ref = URA(1,:);
 responsearray = @(x, y, z) steering_vector(Mx, Mz, elev, d_x, d_z, lambda, x, y, z);
 [Pmusic] = pseudospectrum(responsearray, Y, L);
 
-% Estimativa PEACH com subarranjos
-[Un_h, Un_v, pos_est] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
+%Estimativa PEACH com subarranjos
+[Un_h, Un_v, est_peach] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
     x_h, z_h, x_v, z_v, ref, ...
     lambda, y, n_circ, pos);
 
+% [Un_h, Un_v, est_peach]= fast_peach_nm(Yh, Yv, L, x, ...
+%     x_h, z_h, x_v, z_v, ref, ...
+%     lambda, y, pos);
+
 % Exibicao dos resultados
-fprintf('\nPosicao PEACH-MUSIC: (%.2f, %.2f)', pos_est(1), pos_est(2));
+fprintf('\nPosicao PEACH-MUSIC: (%.2f, %.2f)', est_peach(1), est_peach(2));
  
 % MUSIC (completo)
- %-----------------------------------------------
+%-----------------------------------------------
 % DIVISÃO DO SUBESPAÇO (Vn)
 %-----------------------------------------------
 Cov = (Y * Y') / L;
@@ -35,11 +39,18 @@ eigenvectors = eigenvectors(:, i);
 Un = eigenvectors(:, estimated_sources+1:end);
 %-----------------------------------------------
 
-[nm_est, simplex_history] = nelder_mead(URA, pos_est, Un, lambda, ref, ...
+[nm_est, simplex_history] = nelder_mead(URA, est_peach, Un, lambda, ref, ...
     deltaArea, numIterNM, 1e-6, true, x, y);
 
+%[subplex_est, hist] = subplex_wrapper(URA, pos_est, Un, lambda, ref, x, y, 1e-5, 20);
+
+% % erro de formulação matematica
+% subplex_est = bobyqa_wrapper(URA, Un, ref, lambda, ...
+%                              est_peach, x_lim, y_lim, ...
+%                              tol, max_iter);
+
 % Calculo dos erros euclidianos entre estimativa e posicao real
-erro_peach  = norm(pos_est - pos(1:2));
+erro_peach  = norm(est_peach - pos(1:2));
 erro_nelder = norm(nm_est - pos(1:2));
 
 % Exibicao formatada dos resultados
@@ -50,7 +61,7 @@ fprintf('====================================================\n');
 
 % Exibir resultado
 fprintf('Posicao REAL do usuario:     [%.2f, %.2f]\n', pos(1), pos(2));
-fprintf('Posicao PEACH estimada:      [%.2f, %.2f]\n', pos_est(1), pos_est(2));
+fprintf('Posicao PEACH estimada:      [%.2f, %.2f]\n', est_peach(1), est_peach(2));
 fprintf('Posicao Nelder-Mead refinada:[%.2f, %.2f]\n', nm_est(1), nm_est(2));
 toc;
 
@@ -238,19 +249,7 @@ if(plt_itersec)
     hold off;
 end
 
-% Calculo da potencia recebida total (usado para noise power)
-total_rx_power = 0;
-for i = 1:size(URA, 1)
-    d_i = norm(URA(i,:) - UEs);  % distância do usuário até a antena i
-    beta_i = (lambda / (4*pi*d_i))^2;
-    total_rx_power = total_rx_power + power * beta_i;
-end
-
-% Potencia do ruído
-SNR_lin = 10^(SNR_dB/10);
-noise_power = total_rx_power / SNR_lin;
-
-crb_eucl = crb(L, URA, UEs, lambda, noise_power);
+crb_eucl = crb_vetorizado(L, URA, UEs, lambda, P_tx, SNR_dB);
 
 fprintf('\nCRB (Euclidiano) = %.4f m\n', crb_eucl);
 

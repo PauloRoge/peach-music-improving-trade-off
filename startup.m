@@ -1,52 +1,59 @@
 % startup.m – Executado automaticamente ao abrir o projeto
 clc;
+%clear functions
 
 % ---------------- Parâmetros Gerais ----------------
 freq = 15e9;
 lambda = (3e8) / freq;
-L = 100;
+L = 100000;
 power = 0.1;
 alpha = 2;
 P_tx = 0.1;
-SNR_dB = 30;
-
+SNR_dB = 10;
+% ---------------- Monte Carlo Simulation  ----------------
+MCS = 500;
 % --------------- Flags de Plots ---------------------
-plt_array = 0;
+plt_array = 1;
 plt_hiper = 0;
 plt_circle = 0;
 plt_itersec = 0;
 plt_neldermead = 0;
 plt_peach = 0;
-plt_spectrum = 1;
+plt_spectrum = 0;
 
 % --------------- Antenas URA -----------------------
-Mx = 8; Mz = 8;
+Mx = 4; Mz = 4;
 M = Mx * Mz;
 d_x = lambda/2;
 d_z = lambda/2;
 elev = 20;
 
 % --------------- Grade de Busca ---------------------
-x_grid = -50:1:50;
-y_grid = 10:1:50;
+x_grid = -100:1:100;
+y_grid = 10:1:100;
 x = [min(x_grid), max(x_grid)];
-y = [min(y_grid), max(y_grid)];
+y = [lambda, max(y_grid)];
 
+x_rand = x_grid(1) + (x_grid(end) - x_grid(1)) * rand;
+y_rand = y_grid(1) + (y_grid(end) - y_grid(1)) * rand;
 % --------------- Posição do Usuário -----------------
-%pos = u_rand(x_grid,y_grid);
 
-pos = [30/sqrt(2) 30/sqrt(2) 0];
+%pos = [x_rand, y_rand, 0];
+pos = [30 30 0];
 UEs = pos;
 
 % --------------- Parâmetros PEACH -------------------
-n_hiper = 96;
-n_circ = 48;
+% n_hiper = 96;
+% n_circ = 48;
+
+n_hiper = 12;
+n_circ = 6;
 
 % --------------- Parâmetros NM ----------------------
-max_iter = 10;
-tol = 1e-5;
-deltaArea = 5;
-numIterNM = 100;
+max_iter = 100;
+tol = 1e-7;
+deltaArea = 1;
+numIterNM = 200;
 
 % 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

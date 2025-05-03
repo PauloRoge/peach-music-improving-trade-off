@@ -1,7 +1,7 @@
 % ==============================================================
 %  -– compara PEACH-MUSIC com o CRB teórico corretamente
 % ==============================================================
-clc;
+clear;  clc;
 startup;
 
 % -------------- 2. PREPARA ARRAY (como seu subarrays.m) --------
@@ -10,28 +10,19 @@ startup;
 ref = URA(1,:);   % referência = primeiro elemento
 
 % -------------- 3. LAÇO DE SNRs --------------------------------
-SNR_dB_vec = 0:5:30;            % valores de SNR a testar
-Nreal      = 200;                 % Monte-Carlo
+SNR_dB_vec = 0:2:20;            % valores de SNR a testar
+Nreal      = 1000;                 % Monte-Carlo
 
 RMSE  = zeros(size(SNR_dB_vec));
 CRBth = zeros(size(SNR_dB_vec));
 
-% potência total recebida
-total_rx_power = 0;
-for m = 1:size(URA,1)
-    d_m   = norm(URA(m,:) - pos);
-    beta  = (lambda/(4*pi*d_m))^2;
-    total_rx_power = total_rx_power + P_tx*beta;
-end
-
 % --- Monte-Carlo ---
 for k = 1:numel(SNR_dB_vec)
-    SNRdB = SNR_dB_vec(k);  SNRlin = 10^(SNRdB/10);
+    SNRdB = SNR_dB_vec(k); 
     err2  = 0;                       % acumula erro²
 
     % ------ CRB para este SNR ------
-    noise_power = total_rx_power / SNRlin;
-    CRBth(k) = crb(L, URA, UEs, lambda, noise_power);
+    CRBth(k) = crb(L, URA, pos, lambda, P_tx, SNRdB);
 
     % ------ realizações ------------
     for r = 1:Nreal
@@ -63,7 +54,7 @@ for k = 1:numel(SNR_dB_vec)
     end
 
     RMSE(k) = sqrt(err2/Nreal);
-    fprintf('SNR = %+3d dB | RMSE = %.3f m | √CRB = %.3f m\n',...
+    fprintf('SNR = %+3d dB | RMSE = %.3f m | CRB = %.3f m\n',...
              SNRdB, RMSE(k), CRBth(k));
 end
 
@@ -71,6 +62,6 @@ end
 figure;  semilogy(SNR_dB_vec,RMSE,'o-','LineWidth',1.5); hold on;
 semilogy(SNR_dB_vec,CRBth,'s--','LineWidth',1.5);
 grid on; xlabel('SNR (dB)'); ylabel('Erro (m)');
-legend('RMSE Monte-Carlo','\sqrt{CRB} teórico','Location','southwest');
+legend('RMSE Monte-Carlo','CRB teórico','Location','southwest');
 title(sprintf('PEACH-MUSIC  |  %d×%d URA,  L = %d,  N_{real} = %d',...
                Mx,Mz,L,Nreal));
