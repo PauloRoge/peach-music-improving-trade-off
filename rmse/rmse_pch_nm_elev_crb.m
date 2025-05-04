@@ -1,8 +1,8 @@
 clc;
-startup_fig1;
+startup;
 
 % ------------ VARREDURA EM ELEVAÇÃO -------------------
-elev_vec = 0:0.1:100;  
+elev_vec = 0:1:100;  
 RMSE_nm    = zeros(size(elev_vec));  % RMSE do Nelder-Mead
 RMSE_peach = zeros(size(elev_vec));  % RMSE do PEACH puro
 CRBth      = zeros(size(elev_vec));
@@ -12,12 +12,13 @@ for i = 1:numel(elev_vec)
 
     [URA, ~, ~, x_h, x_v, z_h, z_v] = subarrays(Mx, Mz, d_x, d_z, elev, lambda, 0);
     ref = URA(1,:);
-    CRBth(i) = crb(L, URA, pos, lambda, P_tx, SNR_dB);
+    CRBth(i) = crb(L, URA, pos, lambda, P_tx, SNR_dB, alpha);
 
     err2_nm    = 0;
     err2_peach = 0;
 
     for r = 1:MCS
+    
         [Yh, Yv, Y] = signals(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
         %[Yh, Yv, Y] = signals_fig1(UEs, URA, lambda, L, SNR_dB, P_tx, Mx, Mz);
 

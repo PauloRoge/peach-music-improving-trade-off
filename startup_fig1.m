@@ -9,13 +9,13 @@ alpha = 2;
 P_tx = 0.1;
 SNR_dB = 10;
 % ---------------- Monte Carlo Simulation  ----------------
-MCS = 500; 
+MCS = 100; 
 % --------------- Antenas URA -----------------------
 Mx = 4; Mz = 4;
 M = Mx * Mz;
 d_x = lambda/2;
 d_z = lambda/2;
-elev = 20;
+elev = 15;
 % --------------- Grade de Busca ---------------------
 x_grid = -100:1:100;
 y_grid = 10:1:100;
@@ -27,7 +27,7 @@ y = [lambda, max(y_grid)];
 %pos = [x_rand, y_rand, 0];
 
 % --------------- Posição do Usuário -----------------
-pos = [30 30 0];
+pos = [10 30 0];
 UEs = pos;
 
 % --------------- Parâmetros PEACH -------------------

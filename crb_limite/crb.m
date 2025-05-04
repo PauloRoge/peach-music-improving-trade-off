@@ -1,4 +1,4 @@
-function cramer_rao_bound = crb(L, URA, pos, lambda, P_tx, SNR_dB)
+function cramer_rao_bound = crb(L, URA, pos, lambda, P_tx, SNR_dB, alpha)
     
     SNR_lin = 10^(SNR_dB/10);
 
@@ -7,7 +7,9 @@ function cramer_rao_bound = crb(L, URA, pos, lambda, P_tx, SNR_dB)
 
     for m = 1:size(URA,1)
         d_m = norm(URA(m,:) - pos);
-        beta = (lambda / (4*pi*d_m))^2;
+        beta = (lambda / (4*pi)).^2 ./ (d_m.^alpha); % potência
+        %beta = (lambda / (4*pi*d_m))^2;
+        
         total_rx_power = total_rx_power + P_tx * beta;
     end
 

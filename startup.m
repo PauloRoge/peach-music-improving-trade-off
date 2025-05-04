@@ -5,24 +5,24 @@ clc;
 % ---------------- Parâmetros Gerais ----------------
 freq = 15e9;
 lambda = (3e8) / freq;
-L = 100000;
+L = 100;
 power = 0.1;
 alpha = 2;
 P_tx = 0.1;
-SNR_dB = 10;
+SNR_dB = 20;
 % ---------------- Monte Carlo Simulation  ----------------
-MCS = 500;
+MCS = 100;
 % --------------- Flags de Plots ---------------------
-plt_array = 1;
+plt_array = 0;
 plt_hiper = 0;
 plt_circle = 0;
 plt_itersec = 0;
 plt_neldermead = 0;
 plt_peach = 0;
-plt_spectrum = 0;
+plt_spectrum = 1;
 
 % --------------- Antenas URA -----------------------
-Mx = 4; Mz = 4;
+Mx = 8; Mz = 8;
 M = Mx * Mz;
 d_x = lambda/2;
 d_z = lambda/2;
@@ -30,30 +30,32 @@ elev = 20;
 
 % --------------- Grade de Busca ---------------------
 x_grid = -100:1:100;
-y_grid = 10:1:100;
+y_grid = 10:1:110;
 x = [min(x_grid), max(x_grid)];
-y = [lambda, max(y_grid)];
+y = [min(y_grid), max(y_grid)];
+
+y_plane = [10 110];
+z_plane = [0  40];
+
+
 
 x_rand = x_grid(1) + (x_grid(end) - x_grid(1)) * rand;
 y_rand = y_grid(1) + (y_grid(end) - y_grid(1)) * rand;
 % --------------- Posição do Usuário -----------------
 
 %pos = [x_rand, y_rand, 0];
-pos = [30 30 0];
+pos = [30 30 10];
 UEs = pos;
 
 % --------------- Parâmetros PEACH -------------------
-% n_hiper = 96;
-% n_circ = 48;
-
-n_hiper = 12;
-n_circ = 6;
+n_hiper = 96;
+n_circ = 48;
 
 % --------------- Parâmetros NM ----------------------
 max_iter = 100;
-tol = 1e-7;
+tol = 1e-6;
 deltaArea = 1;
-numIterNM = 200;
+numIterNM = 100;
 
 % 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -91,25 +93,3 @@ numIterNM = 200;
 % UEs = pos;                        % mesma ref passada ao sinal
 % n_hiper = 816;                     % numero de candidatos
 % n_circ  = 408;                     % numero de candidatos
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %Controlar plots logica bool(true=1, false=0)
-% 
-% plt_array      = 0; % architecture
-% plt_hiper      = 0; % PEACH
-% plt_circle     = 0; % PEACH
-% plt_itersec    = 0; % PEACH
-% plt_peach      = 0; % PEACH
-% plt_neldermead = 0; % Nelder-Mead
-% plt_spectrum   = 1; % pseudospectrum  
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% function pseudo_random = u_rand(grid_vector)
-%     if min(grid_vector) == 0
-%         % Geracao simetrica ao redor de zero
-%         pseudo_random = (2 * max(grid_vector)) * rand - max(grid_vector);
-%     else
-%         % Geracao dentro do intervalo real
-%         pseudo_random = min(grid_vector) + (max(grid_vector) - min(grid_vector)) * rand;
-%     end
-% end
