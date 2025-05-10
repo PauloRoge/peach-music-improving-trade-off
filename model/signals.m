@@ -1,4 +1,3 @@
-
 % essa function utiliza o mesmo metodo para calcular a snr do script do
 % Bruno + a correção da antena referencia.
 function [Yh, Yv, Y] = signals(UEs, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz)

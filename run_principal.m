@@ -16,13 +16,13 @@ responsearray = @(x, y, z) steering_vector(Mx, Mz, elev, d_x, d_z, lambda, x, y,
 [Pmusic] = pseudospectrum(responsearray, Y, L);
 
 %Estimativa PEACH com subarranjos
-[Un_h, Un_v, est_peach] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
-    x_h, z_h, x_v, z_v, ref, ...
-    lambda, y, n_circ, pos);
-
-% [Un_h, Un_v, est_peach]= fast_peach_nm(Yh, Yv, L, x, ...
+% [Un_h, Un_v, est_peach] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
 %     x_h, z_h, x_v, z_v, ref, ...
-%     lambda, y, pos);
+%     lambda, y, n_circ, pos);
+
+[Un_h, Un_v, est_peach] = peach_analitico_golden(Yh, Yv, L, x, ...
+    x_h, z_h, x_v, z_v, ref, ...
+    lambda, y, pos);
 
 % Exibicao dos resultados
 fprintf('\nPosicao PEACH-MUSIC: (%.2f, %.2f)', est_peach(1), est_peach(2));
@@ -41,13 +41,6 @@ Un = eigenvectors(:, estimated_sources+1:end);
 
 [nm_est, simplex_history] = nelder_mead(URA, est_peach, Un, lambda, ref, ...
     deltaArea, numIterNM, 1e-6, true, x, y);
-
-%[subplex_est, hist] = subplex_wrapper(URA, pos_est, Un, lambda, ref, x, y, 1e-5, 20);
-
-% % erro de formulação matematica
-% subplex_est = bobyqa_wrapper(URA, Un, ref, lambda, ...
-%                              est_peach, x_lim, y_lim, ...
-%                              tol, max_iter);
 
 % Calculo dos erros euclidianos entre estimativa e posicao real
 erro_peach  = norm(est_peach - pos(1:2));

@@ -1,3 +1,5 @@
+%[subplex_est, hist] = subplex_wrapper(URA, pos_est, Un, lambda, ref, x, y, 1e-5, 20);
+
 function [subplex_est, history] = subplex_wrapper(URA, pos_init, Un, lambda, ref, x_lim, y_lim, tol, max_eval)
 
     % Função objetivo

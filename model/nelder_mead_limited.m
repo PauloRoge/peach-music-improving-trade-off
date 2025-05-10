@@ -1,5 +1,4 @@
-function [nm_est, simplex_history] = nelder_mead(URA, pos_peach, Un, lambda, ref, ...
-    delta, max_iter, tol, verbose, x, y)
+function [nm_est, simplex_history] = nelder_mead_limited(URA, pos_peach, Un, lambda, ref, delta, max_iter, tol, verbose, x, y)
 
     if nargin < 13, tol = 1e-6; end
     if nargin < 14, verbose = false; end
@@ -94,10 +93,6 @@ function [nm_est, simplex_history] = nelder_mead(URA, pos_peach, Un, lambda, ref
     nm_est = simplexNM(1,:);
     simplex_history = simplex_history(~cellfun(@isempty, simplex_history));
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% FUNCAO LOCAL - MUSIC DINAMIC
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function valPS = music(x, y, URA, Un, lambda, ref)
     % music: Retorna o valor do pseudo-espectro MUSIC em (x,y)
