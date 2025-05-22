@@ -2,7 +2,7 @@ clc;
 startup_fig1;
 
 % ------------ VARREDURA EM ELEVAÇÃO -------------------
-elev_vec = 0:5:70;  
+elev_vec = 0:5:100;  
 RMSE_nm    = zeros(size(elev_vec));  % RMSE do Nelder-Mead
 RMSE_peach = zeros(size(elev_vec));  % RMSE do PEACH puro
 CRBth      = zeros(size(elev_vec));
@@ -48,8 +48,12 @@ for i = 1:numel(elev_vec)
 
         % --- Medição de Tempo para Subplex ---
         tic_nm_local = tic; % Inicia timer local para Subplex
-        [subplex_est, ~] = subplex_wrapper(URA, estPos, Un, lambda, ref, x, y, 1e-5, 20); % Removido 'hist' se não usado
-        time_nm_trial = toc(tic_nm_local); % Tempo para esta chamada do Subplex
+        % [subplex_est, ~] = subplex_wrapper(URA, estPos, Un, lambda, ref, x, y, 1e-5, 20); % Removido 'hist' se não usado
+        % time_nm_trial = toc(tic_nm_local); % Tempo para esta chamada do Subplex
+
+        [subplex_est, ~] = nelder_mead(URA, estPos, Un, lambda, ref, ...
+    deltaArea, numIterNM, 1e-6, true, x, y);
+
         % -----------------------------------
 
         err2_nm = err2_nm + norm(subplex_est - pos(1:2))^2;
@@ -149,15 +153,15 @@ end
 
 % ---------------- PLOT RESULTADO RMSE -------------------------
 figure;
-semilogy(elev_vec, RMSE_peach, 'ob-', 'LineWidth', 2,'MarkerFaceColor','w'); hold on;
-semilogy(elev_vec, RMSE_nm,'or-',   'LineWidth', 2,'MarkerFaceColor','w'); % Mudado para vermelho para distinguir
+semilogy(elev_vec, RMSE_peach, 'o-', 'LineWidth', 2,'MarkerFaceColor','w'); hold on;
+semilogy(elev_vec, RMSE_nm,'o-',   'LineWidth', 2,'MarkerFaceColor','w'); % Mudado para vermelho para distinguir
 semilogy(elev_vec, CRBth,'k--', 'LineWidth', 1.5,'MarkerFaceColor','w');
 xlabel('Elevação do array (m)');
 ylabel('Erro (m)');
 legend('PEACH puro','PEACH + Subplex','CRB teórico','Location','southwest');
 grid on;
-title(sprintf('RMSE | SNR = %d dB,  %d×%d URA,  L = %d,  MCS = %d', ...
-       SNR_dB, Mx, Mz, L, MCS));
+% title(sprintf('RMSE | SNR = %d dB,  %d×%d URA,  L = %d,  MCS = %d', ...
+%        SNR_dB, Mx, Mz, L, MCS));
 
 % ---------------- PLOT RESULTADO TEMPO -------------------------
 figure;

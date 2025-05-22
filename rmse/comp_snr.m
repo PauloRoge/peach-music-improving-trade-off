@@ -1,3 +1,4 @@
+
 %============================================================
 % Paulo R. A. Candido Jr.
 % Este script realiza análises comparativas de variantes.
@@ -49,7 +50,7 @@ parfor k = 1:numel(SNR_dB_vec)
         [~, ~, est_peach] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
             x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
 
-        [~, ~, est_golden] = peach_golden_aurea( ...
+        [~, ~, est_golden] = peach_aurea( ...
         Yh, Yv, L, x, n_hiper, x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
         %------------------------------------------------------------
 
@@ -62,8 +63,7 @@ parfor k = 1:numel(SNR_dB_vec)
         hj_est = hooke_jeeves(URA, est_peach, Un, lambda, ...
             ref, deltaArea, 100, tol, x, y, true);
 
-        est_sbplx = subplex_wrapper(URA, est_peach, Un, lambda, ...
-            ref, x, y, 1e-5, 100);
+        est_sbplx = subplex_wrapper(URA, est_peach, Un, lambda, ref, x, y, tol, 50)
         % -----------------------------------------------------------
         
         % ------------- Erro quadrático acumulado -------------------

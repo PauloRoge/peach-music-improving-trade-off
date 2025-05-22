@@ -1,4 +1,4 @@
-function [Un_h, Un_v, pos_est] = peach_golden_aurea( ...
+function [Un_h, Un_v, pos_est] = peach_aurea( ...
         Xh, Xv, L, x, n_hiper, x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos)
 
         % -------------------------------------------------------------
@@ -7,7 +7,7 @@ function [Un_h, Un_v, pos_est] = peach_golden_aurea( ...
         Cov_h = (Xh * Xh') / L;
         Cov_v = (Xv * Xv') / L;
         
-        M_h = size(Cov_h,1); 
+        M_h = size(Cov_h,1);
         M_v = size(Cov_v,1);
         eps_h = 1e-3 * trace(Cov_h) / M_h;
         eps_v = 1e-3 * trace(Cov_v) / M_v;
@@ -35,7 +35,7 @@ function [Un_h, Un_v, pos_est] = peach_golden_aurea( ...
         dx   = 5;
         a_x  = max(min(x), x0-dx);
         b_x  = min(max(x), x0+dx);
-        [x_peak,~] = golden_section_max(cost_h,a_x,b_x,1e-4);
+        [x_peak,~] = golden_section_max(cost_h,a_x,b_x,1e-5); %1e-4
         
         %   — diferenças de caminho →
         F1x = x_h(1);  F1z = z_h(1);
@@ -56,7 +56,7 @@ function [Un_h, Un_v, pos_est] = peach_golden_aurea( ...
         dy   = 5;
         a_y  = max(min(y), y0-dy);
         b_y  = min(max(y), y0+dy);
-        [y_peak,~] = golden_section_max(cost_v,a_y,b_y,1e-4);
+        [y_peak,~] = golden_section_max(cost_v,a_y,b_y,1e-5);
         R_est      = y_peak;
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -3,7 +3,9 @@
 %     deltaArea, numIterNM, tol, x, y, true);
 
 % hooke_jeeves.m
-function [hj_est, history] = hooke_jeeves(URA, x0, Un, lambda, ref, delta0, max_iter, tol, x_bounds, y_bounds, verbose)
+function [hj_est, history] = hooke_jeeves(URA, x0, Un, lambda, ref, delta0, max_iter, tol, ...
+    x_bounds, y_bounds, verbose)
+
     % Derivative-free pattern search (Hooke–Jeeves)
     obj = @(xy) -music(xy(1), xy(2), URA, Un, lambda, ref);  % minimiza -PMUSIC
     x_curr = x0(:)';

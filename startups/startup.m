@@ -9,14 +9,14 @@ L = 100;
 power = 0.1;
 alpha = 2;
 P_tx = 0.1;
-SNR_dB = 10;
+SNR_dB = 20;
 % ---------------- Monte Carlo Simulation  ----------------
-MCS = 1000;
+MCS = 100;
 % --------------- Flags de Plots ---------------------
 plt_array = 0;
 plt_hiper = 0;
 plt_circle = 0;
-plt_itersec = 0;
+plt_itersec = 1;
 plt_neldermead = 0;
 plt_peach = 0;
 plt_spectrum = 0;
@@ -48,7 +48,7 @@ y1 = [13, 50];
 % --------------- Posição do Usuário -----------------
 
 %pos = [x_rand, y_rand, 0];
-pos = [50 50 0];
+pos = [10 20 0];
 UEs = pos;
 
 % --------------- Parâmetros PEACH -------------------
@@ -57,9 +57,9 @@ n_circ = 48;
 
 % --------------- Parâmetros de Refinamento Local Nelder Mead ----------------------
 %max_iter   = 50;            % número de iterações do Hooke–Jeeves/NM
-tol        = 1e-5;          % tolerância para o passo mínimo
-deltaArea  = 0.5;           % passo inicial de 0.5 m, para capturar picos entre nós
-numIterNM  = 50;      % mantém coerência de nomes
+    tol        = 1e-8;          % tolerância para o passo mínimo
+    deltaArea  = 0.5;           % passo inicial de 0.5 m, para capturar picos entre nós
+    numIterNM  = 15;      % mantém coerência de nomes
 
 % --------------------------- Subplex -------------------------------
 tol_subplex = 1e-5;    % mesma tolerância do Nelder-Mead

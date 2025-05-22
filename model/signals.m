@@ -21,7 +21,7 @@ function [Yh, Yv, Y] = signals(UEs, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz)
     % --- Sinal recebido ideal ---
     signal_rx = H * s;                           
 
-    % --- Cálculo de potência igual ao signals_nelder ---
+    % --- Cálculo de potência ---
     total_rx_power = P_tx * sum(beta);           
 
     % --- Ruído branco aditivo ---

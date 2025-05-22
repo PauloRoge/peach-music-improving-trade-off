@@ -20,9 +20,8 @@ responsearray = @(x, y, z) steering_vector(Mx, Mz, elev, d_x, d_z, lambda, x, y,
 %     x_h, z_h, x_v, z_v, ref, ...
 %     lambda, y, n_circ, pos);
 
-[Un_h, Un_v, est_peach] = peach_analitico_golden(Yh, Yv, L, x, ...
-    x_h, z_h, x_v, z_v, ref, ...
-    lambda, y, pos);
+[Un_h, Un_v, est_peach] = peach_aurea( ...
+        Yh, Yv, L, x, n_hiper, x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
 
 % Exibicao dos resultados
 fprintf('\nPosicao PEACH-MUSIC: (%.2f, %.2f)', est_peach(1), est_peach(2));
@@ -39,12 +38,12 @@ eigenvectors = eigenvectors(:, i);
 Un = eigenvectors(:, estimated_sources+1:end);
 %-----------------------------------------------
 
-[nm_est, simplex_history] = nelder_mead(URA, est_peach, Un, lambda, ref, ...
-    deltaArea, numIterNM, 1e-6, true, x, y);
+[subplex_est, history, total_evals] = subplex_wrapper_test(URA, est_peach, Un, ...
+    lambda, ref, x, y, tol, 100);
 
 % Calculo dos erros euclidianos entre estimativa e posicao real
 erro_peach  = norm(est_peach - pos(1:2));
-erro_nelder = norm(nm_est - pos(1:2));
+erro_nelder = norm(subplex_est - pos(1:2));
 
 % Exibicao formatada dos resultados
 fprintf('\n====================================================\n');
@@ -55,7 +54,7 @@ fprintf('====================================================\n');
 % Exibir resultado
 fprintf('Posicao REAL do usuario:     [%.2f, %.2f]\n', pos(1), pos(2));
 fprintf('Posicao PEACH estimada:      [%.2f, %.2f]\n', est_peach(1), est_peach(2));
-fprintf('Posicao Nelder-Mead refinada:[%.2f, %.2f]\n', nm_est(1), nm_est(2));
+fprintf('Posicao Nelder-Mead refinada:[%.2f, %.2f]\n', subplex_est(1), subplex_est(2));
 toc;
 
 if (plt_spectrum == 1)
@@ -303,6 +302,3 @@ function value = pmusic(responsearray, pos, Vn)
     a = responsearray(pos(1), pos(2), pos(3));
     value = 1 / abs(a' * (Vn * Vn') * a);
 end
-
-
-

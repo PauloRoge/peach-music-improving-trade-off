@@ -1,6 +1,6 @@
 function [URA, URA_x, URA_z, x_h, x_v, z_h, z_v] = subarrays(Mx, Mz, d_x, d_z, ...
 elev, lambda, plot)
-    x_offset = (Mx-1)*d_x/2;
+    x_offset =(Mx-1)*d_x/2;
 
     elements_x_a = zeros(Mx, Mz);
     elements_z_a = zeros(Mx, Mz);
