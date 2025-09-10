@@ -4,15 +4,10 @@
 clear; clc;
 start_figure2;                               % parâmetros gerais do projeto
 
-% ---------- 1. Geometria do array ------------------------------------
-% 8x8
+% ---------- 1. Geometria do array ---------------------------------------
 [URA, URA_x, URA_z, x_h, x_v, z_h, z_v] = ...
     subarrays(Mx, Mz, d_x, d_z, elev, lambda, 0);
 ref = URA(1,:);                        % elemento de referência
-
-% 16x16
-[ULA_h, ULA_v, x_h1, x_v1, z_h1, z_v1] = subarrays_ula(8, 8, d_x, d_z, elev, lambda);
-ref_ula = ULA_h(1,:);  % ponto de referência
 
 % ---------- 2. Varredura de SNR -----------------------------------------
 SNR_dB_vec = 0:1:20;                   % passo de 2 dB para reduzir tempo
@@ -48,18 +43,13 @@ parfor k = 1:nsnr
     crb_sum = 0;
 
     for r = 1:MCS
-        rng(r);                                   
+        rng(r);                                     % reprodutibilidade
         % posição aleatória do usuário
         pos = [ -50 + 100*rand , 13 + 37*rand , 0 ];
 
         % ---------- Sinais ------------------------------------------------
         [Yh, Yv, Y] = signals(pos, URA, lambda, L, ...
                               alpha, SNRdB, P_tx, Mx, Mz);
-
-        [Yh_ula, Yv_ula] = signals_ula(pos, URA, ULA_h, ULA_v, ...
-                                lambda, L, alpha, SNRdB, ...
-                                P_tx, Mx, Mz, 'lshape');
-
 
         % ---------- CRB ---------------------------------------------------
         crb_sum = crb_sum + crb(L, URA, pos, lambda, P_tx, SNRdB,2);
@@ -74,8 +64,12 @@ parfor k = 1:nsnr
         % ---------- Golden-PEACH (1-D scan) -----------------------------
         tic;
         [~, ~, est_golden] = peach_golden( ...
-            Yh_ula, Yv_ula, L, x, n_hiper, x_h1, z_h1, x_v1, z_v1, ...
-            ref_ula, lambda, y, n_circ, pos);
+            Yh, Yv, L, x, n_hiper,x_h, z_h, x_v, z_v, ...
+            ref, lambda, y, n-circ, pos);
+
+        % [~, ~, est_golden] = golden_peach(Yh, Yv, L, x, ...
+        %     x_h, z_h, x_v, z_v, ref, ...
+        %     lambda, y, pos)
         t_gd = t_gd + toc;
 
         % ---------- Sub-espaço de ruído para NM e Subplex ----------------
@@ -162,48 +156,48 @@ legend('PEACH','Nelder-Mead','Hooke-Jeeves','Subplex','Golden PEACH');
 title(sprintf('Tempo médio de execução  |  %d×%d URA', Mx,Mz));
 
 % ---------- 4 e 5. Gráficos combinados: RMSE e tempo ----------------------
-% % ---------- Plot combinando RMSE e Tempo – versão para artigo (mais alto) ----------
-% figure;
-% 
-% % Subfigura (a) – RMSE
-% subplot(1,2,1);
-% semilogy(SNR_dB_vec, RMSE_peach , 'x--', ...
-%          SNR_dB_vec, RMSE_nm    , 'o-', ...
-%          SNR_dB_vec, RMSE_hj    , 'x--', ...
-%          SNR_dB_vec, RMSE_sbplx , 'd--', ...
-%          SNR_dB_vec, RMSE_golden, 's--', ...
-%          SNR_dB_vec, CRBth      , 'k--', 'LineWidth',1.5);
-% grid on;
-% xlabel('SNR (dB)');
-% ylabel('RMSE (m)');
-% legend('PEACH','+ Nelder-Mead','+ Hooke-Jeeves','+ Subplex','Golden PEACH','CRB', ...
-%        'Location','southwest');
-% title('RMSE');
-% 
-% % Subfigura (b) – Tempo com marcadores
-% subplot(1,2,2);
-% semilogy(SNR_dB_vec, time_pch_avg , '-x', ...
-%          SNR_dB_vec, time_nm_avg  , '-o', ...
-%          SNR_dB_vec, time_hj_avg  , '-s', ...
-%          SNR_dB_vec, time_sb_avg  , '-d', ...
-%          SNR_dB_vec, time_gd_avg  , '-^', 'LineWidth',1.5);
-% grid on;
-% xlabel('SNR (dB)');
-% ylabel('Tempo médio por realização (s)');
-% legend('PEACH','Nelder-Mead','Hooke-Jeeves','Subplex','Golden PEACH', ...
-%        'Location','northwest');
-% title('Tempo de Execução');
-% 
-% % Título geral
-% sgtitle(sprintf('Desempenho PEACH-MUSIC – %d×%d URA | L=%d | MCS=%d', Mx, Mz, L, MCS));
-% 
-% % Ajuste de tamanho (mais alto para legibilidade)
-% set(gcf, 'Units', 'inches', 'Position', [0 0 7.2 4.8]);   % ~18.2 cm × ~12 cm
-% set(gcf, 'PaperPositionMode', 'auto');
-% 
-% % Fonte compatível com publicações
-% set(findall(gcf,'-property','FontName'), 'FontName', 'Times New Roman');
-% set(findall(gcf,'-property','FontSize'), 'FontSize', 12);
-% 
-% % Exporta com qualidade vetorial (PDF, 600 dpi)
-% exportgraphics(gcf, 'fig_peach_rmse_tempo.pdf', 'ContentType','vector', 'Resolution', 600);
+% ---------- Plot combinando RMSE e Tempo – versão para artigo (mais alto) ----------
+figure;
+
+% Subfigura (a) – RMSE
+subplot(1,2,1);
+semilogy(SNR_dB_vec, RMSE_peach , 'x--', ...
+         SNR_dB_vec, RMSE_nm    , 'o-', ...
+         SNR_dB_vec, RMSE_hj    , 'x--', ...
+         SNR_dB_vec, RMSE_sbplx , 'd--', ...
+         SNR_dB_vec, RMSE_golden, 's--', ...
+         SNR_dB_vec, CRBth      , 'k--', 'LineWidth',1.5);
+grid on;
+xlabel('SNR (dB)');
+ylabel('RMSE (m)');
+legend('PEACH','+ Nelder-Mead','+ Hooke-Jeeves','+ Subplex','Golden PEACH','CRB', ...
+       'Location','southwest');
+title('RMSE');
+
+% Subfigura (b) – Tempo com marcadores
+subplot(1,2,2);
+semilogy(SNR_dB_vec, time_pch_avg , '-x', ...
+         SNR_dB_vec, time_nm_avg  , '-o', ...
+         SNR_dB_vec, time_hj_avg  , '-s', ...
+         SNR_dB_vec, time_sb_avg  , '-d', ...
+         SNR_dB_vec, time_gd_avg  , '-^', 'LineWidth',1.5);
+grid on;
+xlabel('SNR (dB)');
+ylabel('Tempo médio por realização (s)');
+legend('PEACH','Nelder-Mead','Hooke-Jeeves','Subplex','Golden PEACH', ...
+       'Location','northwest');
+title('Tempo de Execução');
+
+% Título geral
+sgtitle(sprintf('Desempenho PEACH-MUSIC – %d×%d URA | L=%d | MCS=%d', Mx, Mz, L, MCS));
+
+% Ajuste de tamanho (mais alto para legibilidade)
+set(gcf, 'Units', 'inches', 'Position', [0 0 7.2 4.8]);   % ~18.2 cm × ~12 cm
+set(gcf, 'PaperPositionMode', 'auto');
+
+% Fonte compatível com publicações
+set(findall(gcf,'-property','FontName'), 'FontName', 'Times New Roman');
+set(findall(gcf,'-property','FontSize'), 'FontSize', 12);
+
+% Exporta com qualidade vetorial (PDF, 600 dpi)
+exportgraphics(gcf, 'fig_peach_rmse_tempo.pdf', 'ContentType','vector', 'Resolution', 600);

@@ -13,7 +13,7 @@ ref = ULA_h(1,:);  % ponto de referência
 responsearray = @(x, y, z) steering_vector(Mx, Mz, elev, d_x, d_z, lambda, x, y, z);
 [Pmusic] = pseudospectrum(responsearray, Y, L);
 
-[Un_h, Un_v, pos_est] = peach_aurea( ...
+[Un_h, Un_v, pos_est] = peach_golden( ...
         Yh, Yv, L, x, n_hiper, x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
 
 % Exibicao dos resultados

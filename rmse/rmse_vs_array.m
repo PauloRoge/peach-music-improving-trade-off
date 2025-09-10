@@ -31,7 +31,7 @@ for k = 1:numel(Mx_list)
         [Yh, Yv, Y] = signals(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
 
         % Estimativa inicial com PEACH
-        [Un_h, Un_v, pos_est] = peach_analitico(Yh, Yv, L, ...
+        [Un_h, Un_v, pos_est] = peach(Yh, Yv, L, ...
             x, n_hiper, x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
 
         % Subespaço de ruído

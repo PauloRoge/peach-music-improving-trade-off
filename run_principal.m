@@ -1,3 +1,5 @@
+close all;
+clc;
 startup;
 tic;
 % Geracao da geometria da URA
@@ -8,7 +10,7 @@ URA_y = zeros(size(URA_x));  % plano XZ ? y fixo = 0 para todas as antenas
 [Yh, Yv, Y] = signals(UEs, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
 %%%%%%%%%%%%%%%%%%%%%%%%% PEAK FINDER %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Elemento de referÍncia
+% Elemento de refer√™ncia
 ref = URA(1,:);
 
 % Funcao anonima de resposta de array
@@ -16,19 +18,19 @@ responsearray = @(x, y, z) steering_vector(Mx, Mz, elev, d_x, d_z, lambda, x, y,
 [Pmusic] = pseudospectrum(responsearray, Y, L);
 
 %Estimativa PEACH com subarranjos
-% [Un_h, Un_v, est_peach] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
-%     x_h, z_h, x_v, z_v, ref, ...
-%     lambda, y, n_circ, pos);
+[Un_h, Un_v, est_peach] = peach(Yh, Yv, L, x, n_hiper, ...
+    x_h, z_h, x_v, z_v, ref, ...
+    lambda, y, n_circ, pos);
 
-[Un_h, Un_v, est_peach] = peach_aurea( ...
-        Yh, Yv, L, x, n_hiper, x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
+% [Un_h, Un_v, est_peach] = peach_brent( ...
+%         Yh, Yv, L, x, n_hiper, x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
 
 % Exibicao dos resultados
 fprintf('\nPosicao PEACH-MUSIC: (%.2f, %.2f)', est_peach(1), est_peach(2));
  
 % MUSIC (completo)
 %-----------------------------------------------
-% DIVIS√O DO SUBESPA«O (Vn)
+% DIVIS√ÉO DO SUBESPA√áO (Vn)
 %-----------------------------------------------
 Cov = (Y * Y') / L;
 [eigenvectors, eigenvalues] = eig(Cov); 
@@ -38,8 +40,11 @@ eigenvectors = eigenvectors(:, i);
 Un = eigenvectors(:, estimated_sources+1:end);
 %-----------------------------------------------
 
-[subplex_est, history, total_evals] = subplex_wrapper_test(URA, est_peach, Un, ...
-    lambda, ref, x, y, tol, 100);
+% [subplex_est, history, total_evals] = subplex_wrapper_test(URA, est_peach, Un, ...
+%     lambda, ref, x, y, tol, 100);
+
+[subplex_est, history] = nelder_mead(URA, est_peach, Un, lambda, ref, ...
+    deltaArea, numIterNM, 1e-6, true, x, y);
 
 % Calculo dos erros euclidianos entre estimativa e posicao real
 erro_peach  = norm(est_peach - pos(1:2));
@@ -78,7 +83,7 @@ if (plt_spectrum == 1)
     axis xy;
     xlabel('x (m)');
     ylabel('y (m)');
-    title(sprintf('Pseudoespectro MUSIC (SNR = %d dB), %d◊%d URA', SNR_dB, Mx, Mz));
+    title(sprintf('Pseudoespectro MUSIC (SNR = %d dB), %d√ó%d URA', SNR_dB, Mx, Mz));
     colorbar;
 
     [X, Y] = meshgrid(x_grid, y_grid);
@@ -90,7 +95,7 @@ if (plt_spectrum == 1)
     title('Pseudoespectro MUSIC');
     shading interp;
     colorbar;
-    view(45, 45); % ¬ngulo de vis„o
+    view(45, 45); % √Çngulo de vis√£o
 
 
     if(plt_neldermead == 1)
@@ -107,7 +112,7 @@ x_lim = 45;
 y_lim = 45;
 y_min = 10;
 
-% Defina a resoluÁ„o e a faixa de varredura:
+% Defina a resolu√ß√£o e a faixa de varredura:
 Nx_plot = 100;  
 Ny_plot = 100;
 
@@ -115,17 +120,17 @@ Ny_plot = 100;
 x_vec = linspace(-x_lim, x_lim, Nx_plot);
 y_vec = linspace(0, y_lim, Ny_plot);
 
-% InicializaÁ„o dos mapas
+% Inicializa√ß√£o dos mapas
 Pmap_h = zeros(Ny_plot, Nx_plot);
 Pmap_v = zeros(Ny_plot, Nx_plot);
 
-% Õndices dos subarranjos
+% √çndices dos subarranjos
 indices_h = ((1:Mx) - 1)*Mz + 1;   % Linha fixa (coluna j=1)
 indices_v = 1:Mz;                 % Coluna fixa (linha i=1)
 
-% ExtraÁ„o das posiÁıes dos subarrays
-URA_h = URA(indices_h, :);   % Subarray horizontal (Mx ◊ 3)
-URA_v = URA(indices_v, :);   % Subarray vertical   (Mz ◊ 3)
+% Extra√ß√£o das posi√ß√µes dos subarrays
+URA_h = URA(indices_h, :);   % Subarray horizontal (Mx √ó 3)
+URA_v = URA(indices_v, :);   % Subarray vertical   (Mz √ó 3)
 
 % --- Mapa de Calor: Subarranjo Horizontal ---
 for i = 1:Nx_plot
@@ -133,10 +138,10 @@ for i = 1:Nx_plot
         x_cand = x_vec(i);
         y_cand = y_vec(j);
 
-        % Dist‚ncia de referÍncia (antena 1)
+        % Dist√¢ncia de refer√™ncia (antena 1)
         d_ref = sqrt((ref(1) - x_cand)^2 + (ref(2) - y_cand)^2 + ref(3)^2);
 
-        % Dist‚ncias dos elementos do subarray
+        % Dist√¢ncias dos elementos do subarray
         d_km = sqrt((URA_h(:,1) - x_cand).^2 + ...
                     (URA_h(:,2) - y_cand).^2 + URA_h(:,3).^2);
 
@@ -178,7 +183,7 @@ if(plt_peach)
     subplot(2,2,1);
     imagesc(x_vec, y_vec, 10*log10(Pmap_h)/ max(max( 10*log10(Pmap_h))));
     set(gca,'YDir','normal'); colorbar;
-    title('Horizontal (HipÈrbole)');
+    title('Horizontal (Hip√©rbole)');
     xlabel('x (m)'); ylabel('y (m)');
     hold on; plot(UEs(1), UEs(2), 'ro','MarkerFaceColor','r','MarkerSize',7);
     hold off;
@@ -187,7 +192,7 @@ if(plt_peach)
     subplot(2,2,2);
     imagesc(x_vec, y_vec, 10*log10(Pmap_v)/max(max( 10*log10(Pmap_v))));
     set(gca,'YDir','normal'); colorbar;
-    title('Vertical (CÌrculo)');
+    title('Vertical (C√≠rculo)');
     xlabel('x (m)'); ylabel('y (m)');
     hold on; plot(UEs(1), UEs(2), 'ro','MarkerFaceColor','r','MarkerSize',7);
     hold off;
@@ -196,7 +201,7 @@ if(plt_peach)
     subplot(2,2,3);
     imagesc(x_vec, y_vec, 10*log10(Pmap_sum)/max(max( 10*log10(Pmap_sum))));
     set(gca,'YDir','normal'); colorbar;
-    title('Soma (HipÈrbole + CÌrculo)');
+    title('Soma (Hip√©rbole + C√≠rculo)');
     xlabel('x (m)'); ylabel('y (m)');
     hold on; plot(UEs(1), UEs(2), 'ro','MarkerFaceColor','r','MarkerSize',7);
     hold off;
@@ -205,7 +210,7 @@ if(plt_peach)
     subplot(2,2,4);
     imagesc(x_vec, y_vec, 10*log10(Pmap_mul)/max(max( 10*log10(Pmap_mul))));
     set(gca,'YDir','normal'); colorbar;
-    title('Soma (HipÈrbole + CÌrculo)');
+    title('Soma (Hip√©rbole + C√≠rculo)');
     xlabel('x (m)'); ylabel('y (m)');
     hold on; plot(UEs(1), UEs(2), 'ro','MarkerFaceColor','r','MarkerSize',7);
     hold off;
@@ -280,7 +285,7 @@ end
 
 function [Pmusic, Un] = pseudospectrum(responsearray, Y, snapshots)
     %-----------------------------------------------
-    % DIVIS√O DO SUBESPA«O (Vn)
+    % DIVIS√ÉO DO SUBESPA√áO (Vn)
     %-----------------------------------------------
     Cov = (Y * Y') / snapshots;
     [eigenvectors, eigenvalues] = eig(Cov); 
@@ -294,7 +299,7 @@ function [Pmusic, Un] = pseudospectrum(responsearray, Y, snapshots)
 end
 
 %-------------------------------------------------------------------------------------------------------
-% FUN«√O PARA CALCULAR O PSEUDO-ESPECTRO
+% FUN√á√ÉO PARA CALCULAR O PSEUDO-ESPECTRO
 %-------------------------------------------------------------------------------------------------------
 function value = pmusic(responsearray, pos, Vn)
     % Compatibiliza entrada 2D ou 3D

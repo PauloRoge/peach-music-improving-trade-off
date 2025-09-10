@@ -33,7 +33,7 @@ for i = 1:numel(elev_vec)
         
         % --- Medição de Tempo para PEACH puro ---
         tic_peach_local = tic; % Inicia timer local para PEACH
-        [~, ~, estPos] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
+        [~, ~, estPos] = peach(Yh, Yv, L, x, n_hiper, ...
             x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
         time_peach_trial = toc(tic_peach_local); % Tempo para esta chamada do PEACH
         % ----------------------------------------
@@ -115,7 +115,7 @@ for i = 1:numel(elev_vec)
         [Yh_p, Yv_p, Y_p] = signals(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
         
         tic_p_local = tic;
-        [~, ~, estPos_p] = peach_analitico(Yh_p, Yv_p, L, x, n_hiper, ...
+        [~, ~, estPos_p] = peach(Yh_p, Yv_p, L, x, n_hiper, ...
             x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
         time_peach_trials(r_idx) = toc(tic_p_local);
         err_sq_peach_trials(r_idx) = norm(estPos_p - pos(1:2))^2;

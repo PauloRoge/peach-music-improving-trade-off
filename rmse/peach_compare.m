@@ -44,7 +44,7 @@ for k = 1:numel(SNR_dB_vec)
         [Yh, Yv, Y] = signals(pos, URA, lambda, L, alpha, SNRdB, P_tx, Mx, Mz);
 
         % PEACH analítico
-        [~, ~, est_peach] = peach_analitico(Yh, Yv, L, x, n_hiper, ...
+        [~, ~, est_peach] = peach(Yh, Yv, L, x, n_hiper, ...
             x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);
         
         % %PEACH (TESTE) ====================================================
@@ -57,37 +57,37 @@ for k = 1:numel(SNR_dB_vec)
         %===============================================================
         %                           OTIMIZAÇÃO
         % ==============================================================
-        % Otimização peach referencia
-        [nm_est, simplex_history] = nelder_mead_test(URA, est_peach, Un, ...
-            lambda, ref, deltaArea, numIterNM, tol, 500, true, x, y);
-
-        % Otimização peach teste 
-        [subplex_est, history, total_evals] = subplex_wrapper_test(URA, ...
-            est_peach, Un, lambda, ref, x, y, tol, 500);
+        % % Otimização peach referencia
+        % [nm_est, simplex_history] = nelder_mead_test(URA, est_peach, Un, ...
+        %     lambda, ref, deltaArea, numIterNM, tol, 500, true, x, y);
+        % 
+        % % Otimização peach teste 
+        % [subplex_est, history, total_evals] = subplex_wrapper_test(URA, ...
+        %     est_peach, Un, lambda, ref, x, y, tol, 500);
         % % ============================================================
 
         err2_analitico = err2_analitico + norm(est_peach - pos(1:2))^2;
-        err2_golden = err2_golden + norm(subplex_est  - pos(1:2))^2;
+        % err2_golden = err2_golden + norm(subplex_est  - pos(1:2))^2;
     end
 
     RMSE_peach(k) = sqrt(err2_analitico / MCS);
-    RMSE_golden_peach(k) = sqrt(err2_golden / MCS);
+    % RMSE_golden_peach(k) = sqrt(err2_golden / MCS);
 
-    fprintf(['SNR = %3d dB | RMSE_peach = %.3f m |' ...
-        ' RMSE_Subplex = %.3f m | CRB = %.3f m\n'], ...
-        SNRdB, RMSE_peach(k), RMSE_golden_peach(k), CRBth(k));
+    % fprintf(['SNR = %3d dB | RMSE_peach = %.3f m |' ...
+    %     ' RMSE_Subplex = %.3f m | CRB = %.3f m\n'], ...
+    %     SNRdB, RMSE_peach(k), RMSE_golden_peach(k), CRBth(k));
 end
 
 % -------------- 4. PLOT ----------------------------------------
 figure; 
 semilogy(SNR_dB_vec, RMSE_peach, 'o-',  'LineWidth', 1.5); hold on;
-semilogy(SNR_dB_vec, RMSE_golden_peach, 'x--', 'LineWidth', 1.5);
+% semilogy(SNR_dB_vec, RMSE_golden_peach, 'x--', 'LineWidth', 1.5);
 semilogy(SNR_dB_vec, CRBth, 'k--', 'LineWidth', 1.5);
 
 grid on;
 xlabel('SNR (dB)');
 ylabel('Erro (m)');
-legend('PEACH','Golden PEACH','CRB teórico','Location','southwest');
+legend('PEACH','CRB teórico','Location','southwest');
 title(sprintf('PEACH-MUSIC  |  %d×%d URA,  L = %d,  N_{real} = %d', ...
        Mx, Mz, L, MCS));
 % 

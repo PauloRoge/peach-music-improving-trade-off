@@ -5,21 +5,21 @@ clc;
 % ---------------- Parâmetros Gerais ----------------
 freq = 15e9;
 lambda = (3e8) / freq;
-L = 100;
+L = 20;
 power = 0.1;
 alpha = 2;
 P_tx = 0.1;
 SNR_dB = 20;
 % ---------------- Monte Carlo Simulation  ----------------
-MCS = 100;
+MCS = 1000;
 % --------------- Flags de Plots ---------------------
 plt_array = 0;
 plt_hiper = 0;
 plt_circle = 0;
-plt_itersec = 1;
+plt_itersec = 0;
 plt_neldermead = 0;
 plt_peach = 0;
-plt_spectrum = 0;
+plt_spectrum = 1;
 
 % --------------- Antenas URA -----------------------
 Mx = 8; Mz = 8;
@@ -48,12 +48,12 @@ y1 = [13, 50];
 % --------------- Posição do Usuário -----------------
 
 %pos = [x_rand, y_rand, 0];
-pos = [10 20 0];
+pos = [15 35 0];
 UEs = pos;
 
 % --------------- Parâmetros PEACH -------------------
-n_hiper = 96;
-n_circ = 48;
+n_hiper = 21;
+n_circ = 12;
 
 % --------------- Parâmetros de Refinamento Local Nelder Mead ----------------------
 %max_iter   = 50;            % número de iterações do Hooke–Jeeves/NM
