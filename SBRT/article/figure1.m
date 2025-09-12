@@ -45,7 +45,7 @@ parfor k = 1:nelev
         pos = [ -50 + 100*rand , 13 + 37*rand , 0 ];
 
         % ---------- Sinais ----------------------------------------------
-        [Yh, Yv, Y] = signals(pos, URA, lambda, L, ...
+        [Yh, Yv, Y] = signals_los(pos, URA, lambda, L, ...
                               alpha, SNRdB_fixed, P_tx, Mx, Mz);
 
         % ---------- CRB --------------------------------------------------

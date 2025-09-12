@@ -12,7 +12,7 @@ P_tx = 0.1;
 SNR_dB = 15;
 % ---------------- Monte Carlo Simulation  ----------------
 % MCS = 10000;
-MCS = 10000;
+MCS = 1000;
 % --------------- Flags de Plots ---------------------
 plt_array = 0;
 plt_hiper = 0;

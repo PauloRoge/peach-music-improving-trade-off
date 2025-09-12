@@ -11,6 +11,10 @@ startup; % Inicializar
     d_x, d_z, elev, lambda, 0);
 ref = URA(1,:);
 
+K_dB   = 0;                % LoS dominante
+scatterer_pos = [-20, 15, 0];  % posição do espalhador
+Gamma  = 0.5 * exp(1j*pi/3);  % reflexão moderada
+
 % -------------- 3. Loops de SNR -----------------------------
 SNR_dB_vec = 0:1:20;
 
@@ -43,8 +47,12 @@ parfor k = 1:numel(SNR_dB_vec)
         crb_sum = crb_sum + crb(L, URA, pos, lambda, P_tx, ...
             SNRdB, alpha);
 
-        [Yh, Yv, Y] = signals(pos, URA, lambda, L, ...
-            alpha, SNRdB, P_tx, Mx, Mz);
+        % [Yh, Yv, Y] = signals_los(pos, URA, lambda, L, ...
+        %     alpha, SNRdB, P_tx, Mx, Mz);
+
+        % --- Chamada da função ---
+        [Yh, Yv, Y] = signals_nlos(UEs, URA, lambda, L, ...
+        alpha, SNR_dB, P_tx, Mx, Mz, K_dB, scatterer_pos, Gamma);
 
         % ---------------------- Refinamento -------------------------
         [~, ~, est_peach] = peach(Yh, Yv, L, x, n_hiper, ...

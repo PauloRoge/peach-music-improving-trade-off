@@ -29,7 +29,7 @@ for i = 1:numel(elev_vec)
 
     parfor r = 1:MCS % Início do parfor
     
-        [Yh, Yv, Y] = signals(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
+        [Yh, Yv, Y] = signals_los(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
         
         % --- Medição de Tempo para PEACH puro ---
         tic_peach_local = tic; % Inicia timer local para PEACH
@@ -112,7 +112,7 @@ for i = 1:numel(elev_vec)
         % Gera sinais (copiado para dentro para ser independente)
         % Nota: URA, x_h, z_h, etc., são 'broadcast variables' ou 'sliced input variables'
         % e 'pos', 'lambda', etc., são 'broadcast variables'.
-        [Yh_p, Yv_p, Y_p] = signals(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
+        [Yh_p, Yv_p, Y_p] = signals_los(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
         
         tic_p_local = tic;
         [~, ~, estPos_p] = peach(Yh_p, Yv_p, L, x, n_hiper, ...

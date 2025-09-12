@@ -21,7 +21,7 @@ parfor i = 1:numel(elev_vec)
     err2 = 0;
 
     for r = 1:MCS
-        [Yh, Yv, Y] = signals(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
+        [Yh, Yv, Y] = signals_los(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
 
         [~, ~, estPos] = peach(Yh, Yv, L, x, n_hiper, ...
             x_h, z_h, x_v, z_v, ref, lambda, y, n_circ, pos);

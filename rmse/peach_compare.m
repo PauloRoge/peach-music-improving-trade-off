@@ -41,7 +41,7 @@ for k = 1:numel(SNR_dB_vec)
         % y_rand = y(1) + (y(2) - y(1)) * rand;
         % pos = [x_rand, y_rand, 0];
 
-        [Yh, Yv, Y] = signals(pos, URA, lambda, L, alpha, SNRdB, P_tx, Mx, Mz);
+        [Yh, Yv, Y] = signals_los(pos, URA, lambda, L, alpha, SNRdB, P_tx, Mx, Mz);
 
         % PEACH analítico
         [~, ~, est_peach] = peach(Yh, Yv, L, x, n_hiper, ...

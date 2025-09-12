@@ -5,7 +5,8 @@ clear;  clc;
 startup;
 
 % -------------- 2. PREPARA ARRAY (como seu subarrays.m) --------
-[URA, URA_x, URA_z, x_h, x_v, z_h, z_v] = subarrays(Mx, Mz, d_x, d_z, elev, lambda, 0);
+[URA, URA_x, URA_z, x_h, x_v, z_h, z_v] = subarrays(Mx, Mz, ...
+    d_x, d_z, elev, lambda, 0);
 
 ref = URA(1,:);   % referência = primeiro elemento
 
@@ -13,6 +14,20 @@ ref = URA(1,:);   % referência = primeiro elemento
 SNR_dB_vec = 0:1:20;            % valores de SNR a testar
 RMSE  = zeros(size(SNR_dB_vec));
 CRBth = zeros(size(SNR_dB_vec));
+
+K_dB = 0;
+
+scatterer_pos = [  % Lx3
+    -35, 15, 2;
+    -8,  10, 1.2;
+    20, 5,  2.5
+];
+
+Gamma = [ ...
+    0.5*exp(1j*pi/3);
+    0.3*exp(1j*1.1*pi);
+    0.4*exp(1j*0.2*pi)
+];
 
 % --- Monte-Carlo ---
 for k = 1:numel(SNR_dB_vec)
@@ -25,14 +40,17 @@ for k = 1:numel(SNR_dB_vec)
     % ------ realizações ------------
     for r = 1:MCS
         % gera sinal com SNR global (signals_snr.m)
-        [Yh,Yv,Y] = signals(pos,URA,lambda,L,alpha,...
-                                SNRdB,P_tx,Mx,Mz);
+        % [Yh,Yv,Y] = signals_los(pos,URA,lambda,L,alpha,...
+        %                         SNRdB,P_tx,Mx,Mz);
+
+        [Yh, Yv, Y] = signals_nlos_multi(pos, URA, lambda, L, ...
+            alpha, SNRdB, P_tx, Mx, Mz, K_dB, scatterer_pos, ...
+            Gamma);
 
         % -------- estimador PEACH --------
-        [~,~,estPeach] = peach(Yh,Yv,L, ...
-            x, n_hiper, ...
-            x_h, z_h, x_v, z_v, ref, ...
-            lambda, y, n_circ, pos);
+        [~,~,estPeach] = peachgolden( ...
+            Yh, Yv, L, x, 24, x_h, z_h, x_v, z_v, ...
+            ref, lambda, y, 12, pos);
 
         %-----------------------------------------------
         % DIVISÃO DO SUBESPAÇO (Vn)
@@ -45,7 +63,8 @@ for k = 1:numel(SNR_dB_vec)
         Un = eigenvectors(:, estimated_sources+1:end);
         %-----------------------------------------------
 
-        % [nm_est, simplex_history] = nelder_mead(URA, estPeach, Un, lambda, ref, ...
+        % [nm_est, simplex_history] = nelder_mead(URA,
+        % estPeach, Un, lambda, ref, ...
         % deltaArea, numIterNM, 1e-6, true, x, y);
 
         err2 = err2 + norm(estPeach - pos(1:2))^2;

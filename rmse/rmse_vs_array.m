@@ -28,7 +28,7 @@ for k = 1:numel(Mx_list)
     % ---------------- Monte Carlo ------------------------------
     for r = 1:Nreal
         % Gera sinais simulados com SNR fixo
-        [Yh, Yv, Y] = signals(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
+        [Yh, Yv, Y] = signals_los(pos, URA, lambda, L, alpha, SNR_dB, P_tx, Mx, Mz);
 
         % Estimativa inicial com PEACH
         [Un_h, Un_v, pos_est] = peach(Yh, Yv, L, ...
